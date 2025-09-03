@@ -1,0 +1,66 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout کد از مخزن
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # نصب Node.js برای قراردادها و فرانت‌اند
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      # نصب Go برای بک‌اند
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.20"
+
+      # نصب وابستگی‌های قراردادها
+      - name: Install Smart Contract dependencies
+        run: |
+          cd contracts
+          npm install
+
+      # اجرای تست‌های قرارداد هوشمند
+      - name: Run Smart Contract tests
+        run: |
+          cd contracts
+          npx hardhat test
+
+      # نصب وابستگی‌های بک‌اند
+      - name: Install Backend dependencies
+        run: |
+          cd src
+          go mod tidy
+
+      # اجرای تست‌های بک‌اند
+      - name: Run Backend tests
+        run: |
+          cd src
+          go test ./tests/api/...
+
+      # نصب وابستگی‌های فرانت‌اند
+      - name: Install Frontend dependencies
+        run: |
+          cd src/web
+          npm install
+
+      # اجرای تست‌های فرانت‌اند
+      - name: Run Frontend tests
+        run: |
+          cd src/web
+          npm test
